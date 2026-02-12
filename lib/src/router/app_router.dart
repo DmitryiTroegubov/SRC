@@ -8,8 +8,8 @@ import '../features/map/map_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/run/run_hud_screen.dart';
 import '../features/run/welcome_screen.dart';
-import '../features/auth/login_screen.dart';
-import '../features/auth/register_screen.dart';
+import '../auth/login_screen.dart';
+import '../auth/register_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../widgets/main_shell.dart';
 

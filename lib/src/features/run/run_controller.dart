@@ -16,7 +16,7 @@ final locationServiceProvider = Provider<LocationService>((ref) {
 
 class RunState {
   const RunState({
-    this.points = const [],
+    this.points = const <LatLng>[],
     this.current,
     this.startedAt,
     this.duration = Duration.zero,
@@ -59,16 +59,16 @@ class RunState {
 }
 
 class RunController extends StateNotifier<RunState> {
-  RunController(this._read) : super(const RunState());
+  RunController(this._ref) : super(const RunState());
 
-  final Reader _read;
+  final Ref _ref;
   final _distance = const Distance();
   StreamSubscription<LatLng>? _subscription;
   Timer? _timer;
   DateTime _lastUiTick = DateTime.fromMillisecondsSinceEpoch(0);
 
   Future<void> startRun() async {
-    final locationService = _read(locationServiceProvider);
+    final locationService = _ref.read(locationServiceProvider);
     state = const RunState(isRunning: true, status: 'GPS: connecting...');
 
     await locationService.startTracking();
@@ -102,26 +102,26 @@ class RunController extends StateNotifier<RunState> {
   }
 
   void pauseRun() {
-    _read(locationServiceProvider).pauseTracking();
+    _ref.read(locationServiceProvider).pauseTracking();
     state = state.copyWith(isPaused: true, status: 'GPS: paused');
   }
 
   void resumeRun() {
-    _read(locationServiceProvider).resumeTracking();
+    _ref.read(locationServiceProvider).resumeTracking();
     state = state.copyWith(isPaused: false, status: 'GPS: active');
   }
 
   Future<void> stopRun() async {
     _timer?.cancel();
     await _subscription?.cancel();
-    await _read(locationServiceProvider).stopTracking();
+    await _ref.read(locationServiceProvider).stopTracking();
 
     if (state.points.length < 2 || state.startedAt == null) {
       state = state.copyWith(isRunning: false, status: 'Недостаточно GPS точек для сохранения');
       return;
     }
 
-    final user = _read(authControllerProvider).user;
+    final user = _ref.read(authControllerProvider).user;
     if (user == null) {
       state = state.copyWith(isRunning: false, status: 'Пользователь не авторизован');
       return;
@@ -143,5 +143,5 @@ class RunController extends StateNotifier<RunState> {
 }
 
 final runControllerProvider = StateNotifierProvider<RunController, RunState>((ref) {
-  return RunController(ref.read);
+  return RunController(ref);
 });
