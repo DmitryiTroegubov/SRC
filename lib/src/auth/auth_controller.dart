@@ -45,6 +45,7 @@ class AuthStateModel {
 class AuthController extends StateNotifier<AuthStateModel> {
   AuthController(this._service)
       : super(AuthStateModel.initial(_service.currentUser)) {
+    _bootstrapPreparedProfiles();
     _subscription = _service.authStateChanges().listen((event) {
       state = state.copyWith(user: event.session?.user, errorMessage: null);
     });
@@ -52,6 +53,16 @@ class AuthController extends StateNotifier<AuthStateModel> {
 
   final AuthService _service;
   StreamSubscription<AuthState>? _subscription;
+
+  Future<void> _bootstrapPreparedProfiles() async {
+    try {
+      await _service.ensurePreparedProfiles();
+    } on AuthException catch (e) {
+      state = state.copyWith(errorMessage: _mapError(e));
+    } catch (_) {
+      state = state.copyWith(errorMessage: 'Unable to prepare profiles');
+    }
+  }
 
   Future<void> login({required String email, required String password}) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -78,6 +89,17 @@ class AuthController extends StateNotifier<AuthStateModel> {
       state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
     } catch (_) {
       state = state.copyWith(isLoading: false, errorMessage: 'Unexpected registration error');
+    }
+  }
+  Future<void> loginPreparedProfile(PreparedProfile profile) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+    try {
+      await _service.signInPreparedProfile(profile);
+      state = state.copyWith(isLoading: false, user: _service.currentUser);
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, errorMessage: _mapError(e));
+    } catch (_) {
+      state = state.copyWith(isLoading: false, errorMessage: 'Unexpected login error');
     }
   }
 
