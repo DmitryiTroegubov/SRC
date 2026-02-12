@@ -1,4 +1,4 @@
-import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final _lineStringPattern = RegExp(r'^LINESTRING\(.*\)$');
